@@ -1,12 +1,12 @@
 {
-  "name": "drupal/phingbehattask",
-  "homepage": "https://TODO",
+  "name": "drupol/phingbehattask",
+  "homepage": "https://github.com/drupol/phingbehattask",
   "description": "Behat task for Phing.",
   "type": "library",
   "license": "GPL-2.0+",
   "support": {
-    "issues": "TODO",
-    "source": "TODO"
+    "issues": "https://github.com/drupol/phingbehattask/issues",
+    "source": "https://github.com/drupol/phingbehattask"
   },
   "authors": [
     {

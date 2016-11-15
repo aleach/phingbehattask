@@ -19,14 +19,14 @@ class Task extends \ExecTask {
    *
    * @var array
    */
-  protected $filesets = array(); //
+  protected $filesets = array();
 
   /**
    * Path the the Behat executable.
    *
    * @var \PhingFile
    */
-  protected $executable = 'behat';
+  protected $bin = 'behat';
 
   /**
    * Optional path(s) to execute.
@@ -128,8 +128,8 @@ class Task extends \ExecTask {
    * @param \PhingFile $str
    *   The behat executable file
    */
-  public function setExecutable(\PhingFile $str) {
-    $this->executable = $str;
+  public function setBin(\PhingFile $str) {
+    $this->bin = $str;
   }
 
   /**
@@ -265,14 +265,14 @@ class Task extends \ExecTask {
   /**
    * Checks if the Behat executable exists.
    *
-   * @param \PhingFile $executable
+   * @param \PhingFile $bin
    *   The path to Behat
    *
    * @return bool
    *   True if exists, False otherwise.
    */
-  protected function behatExists(\PhingFile $executable) {
-    if (!$executable->exists() || !$executable->isFile()) {
+  protected function behatExists(\PhingFile $bin) {
+    if (!$bin->exists() || !$bin->isFile()) {
       return FALSE;
     }
 
@@ -280,10 +280,30 @@ class Task extends \ExecTask {
   }
 
   /**
-   * The main entry point method.
-   *
-   * @throws BuildException
-   * @return bool $return
+   * {@inheritdoc}
+   */
+  public function init() {
+    // Get default properties from project.
+    $properties_mapping = array(
+      'bin' => 'behat.bin',
+      'color' => 'behat.color',
+      'dry-run' => 'behat.dry-run',
+      'name' => 'behat.name',
+      'profile' => 'behat.profile',
+      'suite' => 'behat.suite',
+      'verbose' => 'behat.verbose',
+    );
+
+    foreach ($properties_mapping as $class_property => $behat_property) {
+      if (!empty($this->getProject()->getProperty($behat_property))) {
+        // TODO: We should use a setter here.
+        $this->{$class_property} = $this->getProject()->getProperty($behat_property);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function main() {
     $command = array();
@@ -291,7 +311,7 @@ class Task extends \ExecTask {
     /**
      * The Behat binary command.
      */
-    $command[] = $this->executable->getAbsolutePath();
+    $command[] = $this->bin->getAbsolutePath();
 
     if ($this->path) {
       if (!file_exists($this->path)) {
@@ -306,7 +326,7 @@ class Task extends \ExecTask {
 
     if ($this->config) {
       if (!file_exists($this->config)) {
-        throw new BuildException(
+        throw new \BuildException(
           'ERROR: the "'.$this->config.'" config file does not exist.',
           $this->getLocation()
         );
@@ -320,7 +340,7 @@ class Task extends \ExecTask {
 
     if ($this->name) {
       $option = new Option();
-      $option->setName('nocolor');
+      $option->setName('name');
       $option->addText($this->name);
       $this->options[] = $option;
     }
