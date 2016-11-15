@@ -1,0 +1,26 @@
+{
+  "name": "drupal/phingbehattask",
+  "homepage": "https://TODO",
+  "description": "Behat task for Phing.",
+  "type": "library",
+  "license": "GPL-2.0+",
+  "support": {
+    "issues": "TODO",
+    "source": "TODO"
+  },
+  "authors": [
+    {
+      "name": "Pol Dellaiera",
+      "email": "pol.dellaiera@protonmail.com",
+      "role": "Author"
+    }
+  ],
+  "require": {
+    "phing/phing": "~2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Phing\\Behat\\": "src/"
+    }
+  }
+}
