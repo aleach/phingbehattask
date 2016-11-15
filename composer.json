@@ -2,6 +2,7 @@
   "name": "drupol/phingbehattask",
   "homepage": "https://github.com/drupol/phingbehattask",
   "description": "Behat task for Phing.",
+  "keywords": ["phing", "behat", "test", "continuous integration", "ci"],
   "type": "library",
   "license": "GPL-2.0+",
   "support": {
