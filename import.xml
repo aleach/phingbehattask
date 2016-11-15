@@ -1,0 +1,3 @@
+<project>
+    <taskdef name="behat" classname="\Phing\Behat\Task" />
+</project>

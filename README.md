@@ -24,11 +24,20 @@ or by editing your composer.json file and add in the right section:
 
 ## Usage
 
-To use the Behat task in your build file,  it must be made available to Phing so that the buildfile parser is aware a correlating XML element and it's parameters. This is done by adding a `<taskdef>` task to your build file:
+To use the Behat task in your build file, it must be made available to Phing so that the buildfile parser is aware a correlating XML element and it's parameters.
+This is done by adding a `<taskdef>` task to your build file:
 
 ```xml
   <taskdef name="behat" classname="\Phing\Behat\Task" />
 ```
+
+or by importing the ```import.xml``` file: 
+
+```xml
+  <import file="vendor/drupol/phingbehattask/import.xml"/>
+```
+
+Once imported, you are able to use it:
 
 ```xml
   <behat bin="${project.basedir}/vendor/behat/behat/bin/behat" haltonerror="yes" colors="yes" verbose="${behat.options.verbosity}">
