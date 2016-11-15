@@ -128,7 +128,7 @@ class Task extends \ExecTask {
    * @param \PhingFile $str
    *   The behat executable file
    */
-  public function setExecutable($str) {
+  public function setExecutable(\PhingFile $str) {
     $this->executable = $str;
   }
 
@@ -208,7 +208,7 @@ class Task extends \ExecTask {
    *   Behat strict mode.
    */
   public function setStrict($strict) {
-    $this->strict = StringHelper::booleanValue($strict);
+    $this->strict = \StringHelper::booleanValue($strict);
   }
 
   /**
@@ -228,7 +228,7 @@ class Task extends \ExecTask {
    *   Use ANSI colors.
    */
   public function setColors($colors) {
-    $this->colors = StringHelper::booleanValue($colors);
+    $this->colors = \StringHelper::booleanValue($colors);
   }
 
   /**
@@ -238,7 +238,7 @@ class Task extends \ExecTask {
    *   Run without testing.
    */
   public function setDryRun($dryrun) {
-    $this->dryRun = StringHelper::booleanValue($dryrun);
+    $this->dryRun = \StringHelper::booleanValue($dryrun);
   }
 
   /**
@@ -248,7 +248,7 @@ class Task extends \ExecTask {
    *   If all tests should stop on first failure.
    */
   public function setHaltonerror($stop) {
-    $this->haltonerror = StringHelper::booleanValue($stop);
+    $this->haltonerror = \StringHelper::booleanValue($stop);
   }
 
   /**
@@ -384,12 +384,11 @@ class Task extends \ExecTask {
       $this->options[] = $option;
     }
 
-    // Contract all options into the form Behat expects.
     foreach ($this->options as $option) {
       $command[] = $option->toString();
     }
 
-    $this->realCommand = implode(' ', $command);
+    $this->command = implode(' ', $command);
 
     if (!$this->isApplicable()) {
       return;
@@ -401,13 +400,13 @@ class Task extends \ExecTask {
     $this->cleanup($return, $output);
 
     if ($this->haltonerror && $return != 0) {
-      $outloglevel = $this->logOutput ? Project::MSG_INFO : Project::MSG_VERBOSE;
+      $outloglevel = $this->logOutput ? \Project::MSG_INFO : \Project::MSG_VERBOSE;
       foreach ($output as $line) {
         $this->log($line, $outloglevel);
       }
 
       // Throw an exception if Behat fails.
-      throw new BuildException("Behat exited with code $return");
+      throw new \BuildException("Behat exited with code $return");
     }
 
     return $return != 0;
