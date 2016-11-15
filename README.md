@@ -46,3 +46,7 @@ Once imported, you are able to use it:
 ```
 
 See the [Phing documentation](http://www.phing.info/docs/guide/stable/chapters/appendixes/AppendixB-CoreTasks.html#TaskdefTask) for more information on the `<taskdef>` task.
+
+As the Phing Behat Task extends the Phing ExecTask, you are able to use all the options of that command.
+
+Have a look at [the ExecTask documentation](https://www.phing.info/docs/guide/trunk/ExecTask.html) for the complete list of options.
