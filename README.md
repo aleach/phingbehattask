@@ -1,4 +1,5 @@
 ## Phing Behat Task
+[![Build Status](https://travis-ci.org/ademarco/phingbehattask.svg?branch=travis)](https://travis-ci.org/ademarco/phingbehattask)
 
 A Behat task for [Phing](http://www.phing.info/). This task enable usage of Behat commands in Phing build scripts.
 
