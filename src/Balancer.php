@@ -88,7 +88,7 @@ class Balancer extends \Task {
     // Generate feature files.
     foreach ($this->getContainers($this->root) as $key => $container) {
       $content = $this->generateBehatYaml($container);
-      $this->createFiles($this->destination . "/behat.{$key}.yml", $content);
+      $this->createFiles($key, $content);
     }
   }
 
