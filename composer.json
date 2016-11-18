@@ -42,7 +42,7 @@
   "autoload": {
     "psr-4": {
       "Phing\\Behat\\": "src/",
-      "Phing\\Behat\\Tests\\": "./tests/scr/"
+      "Phing\\Behat\\Tests\\": "./tests/"
     }
   }
 }
