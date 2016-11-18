@@ -1,5 +1,5 @@
 ## Phing Behat Task
-[![Build Status](https://travis-ci.org/drupol/phingbehattask.svg?branch=travis)](https://travis-ci.org/drupol/phingbehattask)
+[![Build Status](https://travis-ci.org/drupol/phingbehattask.svg?branch=master)](https://travis-ci.org/drupol/phingbehattask)
 
 A Behat task for [Phing](http://www.phing.info/). This task enable usage of Behat commands in Phing build scripts.
 
