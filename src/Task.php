@@ -99,6 +99,13 @@ class Task extends \ExecTask {
   protected $colors = TRUE;
 
   /**
+   * Force no ANSI color in the output.
+   *
+   * @var bool
+   */
+  protected $nocolors = FALSE;
+
+  /**
    * Invokes formatters without executing the tests and hooks.
    *
    * @var bool
@@ -222,11 +229,25 @@ class Task extends \ExecTask {
   /**
    * Either force ANSI colors on or off.
    *
-   * @param bool $colors
+   * @param bool $yesNo
    *   Use ANSI colors.
    */
-  public function setColors($colors) {
-    $this->colors = \StringHelper::booleanValue($colors);
+  public function setColors($yesNo) {
+    if ($yesNo) {
+      $this->colors = \StringHelper::booleanValue($yesNo);
+    }
+  }
+
+  /**
+   * Force no ANSI color in the output.
+   *
+   * @param bool $yesNo
+   *   Use ANSI colors.
+   */
+  public function setNoColors($yesNo) {
+    if ($yesNo) {
+      $this->nocolors = \StringHelper::booleanValue($yesNo);
+    }
   }
 
   /**
@@ -284,7 +305,7 @@ class Task extends \ExecTask {
     // Get default properties from project.
     $properties_mapping = array(
       'bin' => 'behat.bin',
-      'color' => 'behat.color',
+      'colors' => 'behat.colors',
       'dry-run' => 'behat.dry-run',
       'name' => 'behat.name',
       'profile' => 'behat.profile',
@@ -382,7 +403,13 @@ class Task extends \ExecTask {
       $this->options[] = $option;
     }
 
-    if (!$this->colors) {
+    if ($this->colors) {
+      $option = new Option();
+      $option->setName('colors');
+      $this->options[] = $option;
+    }
+
+    if ($this->nocolors) {
       $option = new Option();
       $option->setName('no-colors');
       $this->options[] = $option;
@@ -409,6 +436,8 @@ class Task extends \ExecTask {
     if (!$this->isApplicable()) {
       return;
     }
+
+    $this->log('Executing command: ' . $this->command);
 
     $this->prepare();
     $this->buildCommand();
