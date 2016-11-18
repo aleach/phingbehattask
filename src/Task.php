@@ -33,87 +33,84 @@ class Task extends \ExecTask {
    *
    * @var null
    */
-  protected $path = null;
+  protected $path = NULL;
 
   /**
    * Specify config file to use.
    *
    * @var null
    */
-  protected $config = null;
+  protected $config = NULL;
 
   /**
-   * Only execute the feature elements which match part
-   * of the given name or regex.
+   * Only execute features which match part of the given name or regex.
    *
    * @var null
    */
-  protected $name = null;
+  protected $name = NULL;
 
   /**
-   * Only execute the features or scenarios with tags
-   * matching tag filter expression.
+   * Only execute features or scenarios with tags matching following filter.
    *
    * @var null
    */
-  protected $tags = null;
+  protected $tags = NULL;
 
   /**
-   * Only execute the features with actor role matching
-   * a wildcard.
+   * Only execute the features with actor role matching a wildcard.
    *
    * @var null
    */
-  protected $role = null;
+  protected $role = NULL;
 
   /**
    * Specify config profile to use.
    *
    * @var null
    */
-  protected $profile = null;
+  protected $profile = NULL;
 
   /**
    * Only execute a specific suite.
    *
    * @var null
    */
-  protected $suite = null;
+  protected $suite = NULL;
 
   /**
    * Passes only if all tests are explicitly passing.
    *
    * @var bool
    */
-  protected $strict = false;
+  protected $strict = FALSE;
 
   /**
    * Increase verbosity of exceptions.
    *
    * @var bool
    */
-  protected $verbose = false;
+  protected $verbose = FALSE;
 
   /**
    * Force ANSI color in the output.
    *
    * @var bool
    */
-  protected $colors = true;
+  protected $colors = TRUE;
 
   /**
    * Invokes formatters without executing the tests and hooks.
    *
    * @var bool
    */
-  protected $dryRun = false;
+  protected $dryRun = FALSE;
 
   /**
    * Stop processing on first failed scenario.
    *
    * @var bool
    */
-  protected $haltonerror = false;
+  protected $haltonerror = FALSE;
 
   /**
    * All Behat options to be used to create the command.
@@ -126,7 +123,7 @@ class Task extends \ExecTask {
    * Set the path to the Behat executable.
    *
    * @param \PhingFile $str
-   *   The behat executable file
+   *   The behat executable file.
    */
   public function setBin(\PhingFile $str) {
     $this->bin = $str;
@@ -135,7 +132,8 @@ class Task extends \ExecTask {
   /**
    * Set the path to features to test.
    *
-   * @param string $path The path to features.
+   * @param string $path
+   *   The path to features.
    */
   public function setPath($path) {
     $this->path = $path;
@@ -145,7 +143,7 @@ class Task extends \ExecTask {
    * Sets the Behat config file to use.
    *
    * @param string $config
-   *   The config file
+   *   The config file.
    */
   public function setConfig($config) {
     $this->config = $config;
@@ -155,7 +153,7 @@ class Task extends \ExecTask {
    * Sets the name of tests to run.
    *
    * @param string $name
-   *   The feature name to match
+   *   The feature name to match.
    */
   public function setName($name) {
     $this->name = $name;
@@ -165,7 +163,7 @@ class Task extends \ExecTask {
    * Sets the test tags to use.
    *
    * @param string $tags
-   *   The tag(s) to match
+   *   The tag(s) to match.
    */
   public function setTags($tags) {
     $this->tags = $tags;
@@ -266,7 +264,7 @@ class Task extends \ExecTask {
    * Checks if the Behat executable exists.
    *
    * @param \PhingFile $bin
-   *   The path to Behat
+   *   The path to Behat.
    *
    * @return bool
    *   True if exists, False otherwise.
@@ -308,15 +306,13 @@ class Task extends \ExecTask {
   public function main() {
     $command = array();
 
-    /**
-     * The Behat binary command.
-     */
+    // The Behat binary command.
     $command[] = $this->bin->getAbsolutePath();
 
     if ($this->path) {
       if (!file_exists($this->path)) {
-        throw new BuildException(
-          'ERROR: the "'.$this->path.'" path does not exist.',
+        throw new \BuildException(
+          'ERROR: the "' . $this->path . '" path does not exist.',
           $this->getLocation()
         );
       }
@@ -327,7 +323,7 @@ class Task extends \ExecTask {
     if ($this->config) {
       if (!file_exists($this->config)) {
         throw new \BuildException(
-          'ERROR: the "'.$this->config.'" config file does not exist.',
+          'ERROR: the "' . $this->config . '" config file does not exist.',
           $this->getLocation()
         );
       }
@@ -379,7 +375,7 @@ class Task extends \ExecTask {
       $this->options[] = $option;
     }
 
-    if ($this->verbose !== false) {
+    if ($this->verbose !== FALSE) {
       $option = new Option();
       $option->setName('verbose');
       $option->addText($this->verbose);
