@@ -53,7 +53,7 @@ class Task extends \ExecTask {
    * @param PhingFile $bin
    *   The behat executable file.
    */
-  public function setBin(PhingFile $bin) {
+  public function setBin($bin) {
     $this->bin = $bin;
     $this->setExecutable($bin);
   }
@@ -265,8 +265,8 @@ class Task extends \ExecTask {
     );
 
     foreach ($properties_mapping as $class_method => $behat_property) {
-      if (!empty($this->getProject()->getProperty($behat_property))) {
-        call_user_func(array($this, $class_method), $this->getProject()->getProperty($behat_property));
+      if ($property = $this->getProject()->getProperty($behat_property)) {
+        call_user_func(array($this, $class_method), $property);
       }
     }
   }
