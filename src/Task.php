@@ -2,8 +2,6 @@
 
 namespace Phing\Behat;
 
-use PhingFile;
-
 /**
  * A Behat task for Phing.
  *
@@ -50,12 +48,12 @@ class Task extends \ExecTask {
   /**
    * Set the path to the Behat executable.
    *
-   * @param PhingFile $bin
+   * @param string $bin
    *   The behat executable file.
    */
   public function setBin($bin) {
-    $this->bin = $bin;
-    $this->setExecutable($bin);
+    $this->bin = new \PhingFile($bin);
+    $this->setExecutable($this->bin);
   }
 
   /**
