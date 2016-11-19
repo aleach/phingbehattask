@@ -4,6 +4,8 @@ namespace Phing\Behat;
 
 /**
  * A Behat task for Phing.
+ *
+ * @package Phing\Behat
  */
 class Task extends \ExecTask {
 
@@ -29,102 +31,19 @@ class Task extends \ExecTask {
   protected $bin = 'behat';
 
   /**
-   * Optional path(s) to execute.
-   *
-   * @var null
-   */
-  protected $path = NULL;
-
-  /**
-   * Specify config file to use.
-   *
-   * @var null
-   */
-  protected $config = NULL;
-
-  /**
-   * Only execute features which match part of the given name or regex.
-   *
-   * @var null
-   */
-  protected $name = NULL;
-
-  /**
-   * Only execute features or scenarios with tags matching following filter.
-   *
-   * @var null
-   */
-  protected $tags = NULL;
-
-  /**
-   * Only execute the features with actor role matching a wildcard.
-   *
-   * @var null
-   */
-  protected $role = NULL;
-
-  /**
-   * Specify config profile to use.
-   *
-   * @var null
-   */
-  protected $profile = NULL;
-
-  /**
-   * Only execute a specific suite.
-   *
-   * @var null
-   */
-  protected $suite = NULL;
-
-  /**
-   * Passes only if all tests are explicitly passing.
-   *
-   * @var bool
-   */
-  protected $strict = FALSE;
-
-  /**
-   * Increase verbosity of exceptions.
-   *
-   * @var bool
-   */
-  protected $verbose = FALSE;
-
-  /**
-   * Force ANSI color in the output.
-   *
-   * @var bool
-   */
-  protected $colors = TRUE;
-
-  /**
-   * Force no ANSI color in the output.
-   *
-   * @var bool
-   */
-  protected $nocolors = FALSE;
-
-  /**
-   * Invokes formatters without executing the tests and hooks.
-   *
-   * @var bool
-   */
-  protected $dryRun = FALSE;
-
-  /**
-   * Stop processing on first failed scenario.
-   *
-   * @var bool
-   */
-  protected $haltonerror = FALSE;
-
-  /**
    * All Behat options to be used to create the command.
    *
    * @var Option[]
    */
   protected $options = array();
+
+  /**
+   * Task constructor.
+   */
+  public function __construct() {
+    parent::__construct();
+    $this->setExecutable($this->bin);
+  }
 
   /**
    * Set the path to the Behat executable.
@@ -134,6 +53,7 @@ class Task extends \ExecTask {
    */
   public function setBin(\PhingFile $str) {
     $this->bin = $str;
+    $this->setExecutable($str);
   }
 
   /**
@@ -143,7 +63,9 @@ class Task extends \ExecTask {
    *   The path to features.
    */
   public function setPath($path) {
-    $this->path = $path;
+    $this->createOption()
+      ->setName('path')
+      ->addText($path);
   }
 
   /**
@@ -153,7 +75,9 @@ class Task extends \ExecTask {
    *   The config file.
    */
   public function setConfig($config) {
-    $this->config = $config;
+    $this->createOption()
+      ->setName('config')
+      ->addText($config);
   }
 
   /**
@@ -163,7 +87,9 @@ class Task extends \ExecTask {
    *   The feature name to match.
    */
   public function setName($name) {
-    $this->name = $name;
+    $this->createOption()
+      ->setName('profile')
+      ->addText($name);
   }
 
   /**
@@ -173,7 +99,9 @@ class Task extends \ExecTask {
    *   The tag(s) to match.
    */
   public function setTags($tags) {
-    $this->tags = $tags;
+    $this->createOption()
+      ->setName('profile')
+      ->addText($tags);
   }
 
   /**
@@ -183,7 +111,24 @@ class Task extends \ExecTask {
    *   The actor role to match.
    */
   public function setRole($role) {
-    $this->role = $role;
+    $this->createOption()
+      ->setName('profile')
+      ->addText($role);
+  }
+
+  /**
+   * This is not a real drush option. It's just used for tests.
+   *
+   * Display the command that would be runned only.
+   *
+   * @param bool $yesNo
+   *   The pretend option.
+   */
+  public function setPretend($yesNo) {
+    if ($yesNo) {
+      $this->createOption()
+        ->setName('pretend');
+    }
   }
 
   /**
@@ -193,7 +138,9 @@ class Task extends \ExecTask {
    *   The profile to use.
    */
   public function setProfile($profile) {
-    $this->profile = $profile;
+    $this->createOption()
+      ->setName('profile')
+      ->addText($profile);
   }
 
   /**
@@ -203,27 +150,38 @@ class Task extends \ExecTask {
    *   The suite to use.
    */
   public function setSuite($suite) {
-    $this->suite = $suite;
+    if ($suite) {
+      $this->createOption()
+        ->setName('suite')
+        ->addText($suite);
+    }
   }
 
   /**
    * Sets the flag if strict testing should be enabled.
    *
-   * @param bool $strict
+   * @param bool $yesNo
    *   Behat strict mode.
    */
-  public function setStrict($strict) {
-    $this->strict = \StringHelper::booleanValue($strict);
+  public function setStrict($yesNo) {
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('strict');
+    }
   }
 
   /**
    * Sets the flag if a verbose output should be used.
    *
-   * @param bool $verbose
+   * @param bool $yesNo
    *   Use verbose output.
    */
-  public function setVerbose($verbose) {
-    $this->verbose = $verbose;
+  public function setVerbose($yesNo) {
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('verbose')
+        ->addText('yes');
+    }
   }
 
   /**
@@ -233,8 +191,9 @@ class Task extends \ExecTask {
    *   Use ANSI colors.
    */
   public function setColors($yesNo) {
-    if ($yesNo) {
-      $this->colors = \StringHelper::booleanValue($yesNo);
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('colors');
     }
   }
 
@@ -245,29 +204,36 @@ class Task extends \ExecTask {
    *   Use ANSI colors.
    */
   public function setNoColors($yesNo) {
-    if ($yesNo) {
-      $this->nocolors = \StringHelper::booleanValue($yesNo);
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('no-colors');
     }
   }
 
   /**
    * Invokes test formatters without running tests against a site.
    *
-   * @param bool $dryrun
+   * @param bool $yesNo
    *   Run without testing.
    */
-  public function setDryRun($dryrun) {
-    $this->dryRun = \StringHelper::booleanValue($dryrun);
+  public function setDryRun($yesNo) {
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('dry-run');
+    }
   }
 
   /**
    * Sets the flag if test execution should stop in the event of a failure.
    *
-   * @param bool $stop
+   * @param bool $yesNo
    *   If all tests should stop on first failure.
    */
-  public function setHaltonerror($stop) {
-    $this->haltonerror = \StringHelper::booleanValue($stop);
+  public function setHaltonerror($yesNo) {
+    if (\StringHelper::booleanValue($yesNo)) {
+      $this->createOption()
+        ->setName('stop-on-failure');
+    }
   }
 
   /**
@@ -282,41 +248,23 @@ class Task extends \ExecTask {
   }
 
   /**
-   * Checks if the Behat executable exists.
-   *
-   * @param \PhingFile $bin
-   *   The path to Behat.
-   *
-   * @return bool
-   *   True if exists, False otherwise.
-   */
-  protected function behatExists(\PhingFile $bin) {
-    if (!$bin->exists() || !$bin->isFile()) {
-      return FALSE;
-    }
-
-    return TRUE;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function init() {
     // Get default properties from project.
     $properties_mapping = array(
-      'bin' => 'behat.bin',
-      'colors' => 'behat.colors',
-      'dry-run' => 'behat.dry-run',
-      'name' => 'behat.name',
-      'profile' => 'behat.profile',
-      'suite' => 'behat.suite',
-      'verbose' => 'behat.verbose',
+      'setBin' => 'behat.bin',
+      'setColors' => 'behat.colors',
+      'setDryrun' => 'behat.dry-run',
+      'setName' => 'behat.name',
+      'setProfile' => 'behat.profile',
+      'setSuite' => 'behat.suite',
+      'setVerbose' => 'behat.verbose',
     );
 
-    foreach ($properties_mapping as $class_property => $behat_property) {
+    foreach ($properties_mapping as $class_method => $behat_property) {
       if (!empty($this->getProject()->getProperty($behat_property))) {
-        // TODO: We should use a setter here.
-        $this->{$class_property} = $this->getProject()->getProperty($behat_property);
+        call_user_func(array($this, $class_method), $this->getProject()->getProperty($behat_property));
       }
     }
   }
@@ -325,136 +273,115 @@ class Task extends \ExecTask {
    * {@inheritdoc}
    */
   public function main() {
-    $command = array();
-
-    // The Behat binary command.
-    $command[] = $this->bin->getAbsolutePath();
-
-    if ($this->path) {
-      if (!file_exists($this->path)) {
-        throw new \BuildException(
-          'ERROR: the "' . $this->path . '" path does not exist.',
-          $this->getLocation()
-        );
-      }
+    /*
+     * The Behat binary command.
+     */
+    if ($this->bin instanceof \PhingFile) {
+      $this->setBin($this->bin);
     }
+    $this->commandline->setExecutable($this->bin);
 
-    $command[] = !empty($this->path) ? $this->path : '';
+    /*
+     * The options.
+     */
+    $options = array();
 
-    if ($this->config) {
-      if (!file_exists($this->config)) {
-        throw new \BuildException(
-          'ERROR: the "' . $this->config . '" config file does not exist.',
-          $this->getLocation()
-        );
-      }
-
-      $option = new Option();
-      $option->setName('config');
-      $option->addText($this->config);
-      $this->options[] = $option;
-    }
-
-    if ($this->name) {
-      $option = new Option();
-      $option->setName('name');
-      $option->addText($this->name);
-      $this->options[] = $option;
-    }
-
-    if ($this->tags) {
-      $option = new Option();
-      $option->setName('tags');
-      $option->addText($this->tags);
-      $this->options[] = $option;
-    }
-
-    if ($this->role) {
-      $option = new Option();
-      $option->setName('role');
-      $option->addText($this->role);
-      $this->options[] = $option;
-    }
-
-    if ($this->profile) {
-      $option = new Option();
-      $option->setName('profile');
-      $option->addText($this->profile);
-      $this->options[] = $option;
-    }
-
-    if ($this->suite) {
-      $option = new Option();
-      $option->setName('suite');
-      $option->addText($this->suite);
-      $this->options[] = $option;
-    }
-
-    if ($this->strict) {
-      $option = new Option();
-      $option->setName('strict');
-      $this->options[] = $option;
-    }
-
-    if ($this->verbose !== FALSE) {
-      $option = new Option();
-      $option->setName('verbose');
-      $option->addText($this->verbose);
-      $this->options[] = $option;
-    }
-
-    if ($this->colors) {
-      $option = new Option();
-      $option->setName('colors');
-      $this->options[] = $option;
-    }
-
-    if ($this->nocolors) {
-      $option = new Option();
-      $option->setName('no-colors');
-      $this->options[] = $option;
-    }
-
-    if ($this->dryRun) {
-      $option = new Option();
-      $option->setName('dry-run');
-      $this->options[] = $option;
-    }
-
-    if ($this->haltonerror) {
-      $option = new Option();
-      $option->setName('stop-on-failure');
-      $this->options[] = $option;
+    // This has been specifically made for tests.
+    // If the pretend option has been found, just display the drush command
+    // but never execute it.
+    $pretend = NULL;
+    if ($pretend = $this->optionExists('pretend')) {
+      $this->setLogoutput(FALSE);
+      $this->setPassthru(FALSE);
+      $this->setCheckreturn(FALSE);
+      $this->optionRemove('pretend');
     }
 
     foreach ($this->options as $option) {
-      $command[] = $option->toString();
+      // Trick to ensure no option duplicates.
+      $options[$option->getName()] = $option->toString();
     }
+    // Sort options alphabetically.
+    asort($options);
+    $this->commandline->addArguments(array_values($options));
 
-    $this->command = implode(' ', $command);
-
-    if (!$this->isApplicable()) {
-      return;
-    }
-
-    $this->log('Executing command: ' . $this->command);
-
-    $this->prepare();
     $this->buildCommand();
-    list($return, $output) = $this->executeCommand();
-    $this->cleanup($return, $output);
+    $this->log('Executing command: ' . $this->realCommand);
 
-    if ($this->haltonerror && $return != 0) {
-      $outloglevel = $this->logOutput ? \Project::MSG_INFO : \Project::MSG_VERBOSE;
-      foreach ($output as $line) {
-        $this->log($line, $outloglevel);
-      }
+    if (!$pretend) {
+      parent::main();
+    }
+  }
 
-      // Throw an exception if Behat fails.
-      throw new \BuildException("Behat exited with code $return");
+  /**
+   * {@inheritdoc}
+   */
+  protected function buildCommand() {
+    $this->realCommand = implode(' ', $this->commandline->getCommandline());
+
+    if ($this->error !== NULL) {
+      $this->realCommand .= ' 2> ' . escapeshellarg($this->error->getPath());
+      $this->log(
+        "Writing error output to: " . $this->error->getPath(),
+        $this->logLevel
+      );
     }
 
-    return $return != 0;
+    if ($this->output !== NULL) {
+      $this->realCommand .= ' 1> ' . escapeshellarg($this->output->getPath());
+      $this->log(
+        "Writing standard output to: " . $this->output->getPath(),
+        $this->logLevel
+      );
+    }
+    elseif ($this->spawn) {
+      $this->realCommand .= ' 1>/dev/null';
+      $this->log("Sending output to /dev/null", $this->logLevel);
+    }
+
+    // If neither output nor error are being written to file
+    // then we'll redirect error to stdout so that we can dump
+    // it to screen below.
+    if ($this->output === NULL && $this->error === NULL && $this->passthru === FALSE) {
+      $this->realCommand .= ' 2>&1';
+    }
+
+    // We ignore the spawn boolean for windows.
+    if ($this->spawn) {
+      $this->realCommand .= ' &';
+    }
+  }
+
+  /**
+   * Check if an option exists.
+   *
+   * @param string $optionName
+   *   The option name.
+   *
+   * @return array|\Phing\Behat\Option[]
+   *   The option if exists, an empty array otherwise.
+   */
+  private function optionExists($optionName) {
+    return array_filter($this->options, function ($option) use ($optionName) {
+      return $option->getName() == $optionName;
+    });
+  }
+
+  /**
+   * Remove an option.
+   *
+   * @param string $optionName
+   *   The option name.
+   *
+   * @return \Phing\Behat\Option[]
+   *   The option array without the option to remove.
+   */
+  private function optionRemove($optionName) {
+    $this->options = array_filter($this->options, function ($option) use ($optionName) {
+      return $option->getName() != $optionName;
+    });
+
+    return $this->options;
   }
 
 }
