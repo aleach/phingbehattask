@@ -225,6 +225,7 @@ class Task extends \ExecTask {
 
   /**
    * How to format tests output. pretty is default.
+   *
    * Available formats are:
    * - junit: Outputs the failures in JUnit compatible files.
    * - progress: Prints one character per step.
