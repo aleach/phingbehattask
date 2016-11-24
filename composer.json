@@ -44,7 +44,8 @@
     ],
     "phpcs": "./vendor/bin/phpcs --standard=Drupal,DrupalPractice --ignore=vendor .",
     "phpcbf": "./vendor/bin/phpcbf --standard=Drupal,DrupalPractice --ignore=vendor .",
-    "phpunit": "./vendor/bin/phpunit"
+    "phpunit": "./vendor/bin/phpunit --coverage-clover build/logs/clover.xml -c tests/phpunit.xml tests",
+    "coveralls": "./vendor/bin/coveralls"
   },
   "autoload": {
     "psr-4": {
