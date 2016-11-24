@@ -224,6 +224,24 @@ class Task extends \ExecTask {
   }
 
   /**
+   * How to format tests output. pretty is default.
+   *
+   * Available formats are:
+   * - junit: Outputs the failures in JUnit compatible files.
+   * - progress: Prints one character per step.
+   * - pretty: Prints the feature as is.
+   * You can use multiple formats at the same time. (multiple values allowed)
+   *
+   * @param string $format
+   *   The format.
+   */
+  public function setFormat($format) {
+    $this->createOption()
+      ->setName('format')
+      ->addText($format);
+  }
+
+  /**
    * Sets the flag if test execution should stop in the event of a failure.
    *
    * @param bool $yesNo
