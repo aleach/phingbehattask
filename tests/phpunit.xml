@@ -2,7 +2,7 @@
 
 <phpunit colors="true">
   <testsuites>
-    <testsuite name="phingdrushtask">
+    <testsuite name="phingbehattask">
         <directory>./src/</directory>
     </testsuite>
   </testsuites>
