@@ -38,6 +38,25 @@ class Balancer extends \Task {
   private $import;
 
   /**
+   * An array of filter profile.
+   *
+   * @var FilterProfile[]
+   */
+  protected $filterProfiles = [];
+
+  /**
+   * Create the filter profile.
+   *
+   * @return FilterProfile
+   *   The created filter profile.
+   */
+  public function createFilterProfile() {
+    $num = array_push($this->filterProfiles, new FilterProfile());
+
+    return $this->filterProfiles[$num - 1];
+  }
+
+  /**
    * Set number of containers..
    *
    * @param string $containers
@@ -78,6 +97,22 @@ class Balancer extends \Task {
   }
 
   /**
+   * Get the filter profiles specified.
+   *
+   * @return array
+   *    An array of filterProfiles.
+   */
+  public function getFilterProfiles() {
+    $filterProfiles = [];
+
+    foreach ($this->filterProfiles as $filterProfile) {
+      $filterProfiles[$filterProfile->getName()] = $filterProfile->getText();
+    }
+
+    return $filterProfiles ? $filterProfiles : ['' => []];
+  }
+
+  /**
    * Main callback.
    */
   public function main() {
@@ -85,11 +120,55 @@ class Balancer extends \Task {
       throw new \InvalidArgumentException("{$this->destination} is not a valid directory.");
     }
 
-    // Generate feature files.
-    foreach ($this->getContainers($this->root) as $key => $container) {
-      $content = $this->generateBehatYaml($container);
-      $this->createFiles($key, $content);
+    $filterProfiles = $this->getFilterProfiles();
+    $files = $this->scanDirectory($this->root, '/.feature/');
+
+    $filteredFiles = $this->getFilteredFiles($filterProfiles, $files);
+    foreach ($filteredFiles as $profile => $filteredFiles) {
+      foreach ($this->getContainers($filteredFiles) as $key => $container) {
+        $content = $this->generateBehatYaml($container, $profile);
+        $this->createFiles($key, $content, $profile);
+      }
     }
+  }
+
+  /**
+   * Get feature files for the given profiles.
+   *
+   * This function checks each feature file for the tags specified
+   * in the filterProfile options.
+   *
+   * @param array $filterProfiles
+   *    The array of filters for each profile.
+   * @param array $files
+   *    List of all feature files with their absolute path.
+   *
+   * @return array
+   *    An array of feature files for each profile.
+   */
+  public function getFilteredFiles($filterProfiles, $files) {
+    $filteredFiles = [];
+
+    foreach ($filterProfiles as $profile => $filters) {
+      $filteredFiles[$profile] = [];
+
+      // Empty tag, all files.
+      if ($filters === []) {
+        $filteredFiles[$profile] = $files;
+        continue;
+      }
+
+      foreach ($files as $file) {
+        foreach($filters as $filter) {
+          if (strpos(file_get_contents($file), '@' . $filter) !== false) {
+            $filteredFiles[$profile][$file] = $file;
+          }
+        }
+      }
+      $filteredFiles[$profile] = array_values($filteredFiles[$profile]);
+    }
+
+    return $filteredFiles;
   }
 
   /**
@@ -101,9 +180,9 @@ class Balancer extends \Task {
    * @return array
    *    List of feature files divided into containers.
    */
-  public function getContainers($root) {
-    $files = $this->scanDirectory($root, '/.feature/');
+  public function getContainers($files) {
     $size = ceil(count($files) / $this->containers);
+
     return array_chunk($files, $size);
   }
 
@@ -144,16 +223,22 @@ class Balancer extends \Task {
    *
    * @param array $container
    *    Array of feature file locations.
+   * @param string $profile
+   *    If filtered, the profile name, otherwise an empty string.
    *
    * @return string
    *    Return behat.yaml file.
    */
-  public function generateBehatYaml($container) {
+  public function generateBehatYaml($container, $profile) {
+    if ($profile === '') {
+      $profile = 'default';
+    }
     $features = implode("\n        - ", $container);
+
     return <<<YAML
 imports:
   - {$this->import}
-default:
+{$profile}:
   suites:
     default:
       paths:
@@ -169,9 +254,16 @@ YAML;
    *    Behat configuration file number.
    * @param string $content
    *    Behat configuration file content.
+   * @param string $profile
+   *    If filtered, the profile of the current filter, otherwise an empty string.
    */
-  protected function createFiles($number, $content) {
-    file_put_contents($this->destination . "/behat.{$number}.yml", $content);
+  protected function createFiles($number, $content, $profile) {
+    $filename = "/behat.{$number}.yml";
+    if ($profile !== '') {
+      $filename = "/behat.{$profile}.{$number}.yml";
+    }
+
+    file_put_contents($this->destination . $filename, $content);
   }
 
 }

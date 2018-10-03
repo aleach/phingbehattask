@@ -96,4 +96,38 @@ The attributes have the following meaning:
 - `destination`: Destination directory in which the new behat files will be generated.
 - `import`: Main Behat configuration file to be imported in each of the generated file.
 
-You can then configure your continuous integration to run one behat file per environment. 
+You can then configure your continuous integration to run one behat file per environment.
+
+## Filtering
+
+The behat balancer also allows for filtering on tags when using multiple profiles.
+
+The following example will first filter the features into profile specific features, by using the tags as a filter:
+  - default: Features tagged with (@wip, @profile, @login or @theme) will only be included and then balanced.
+  - secondary_profile: Features taggegged with (@secondary_profile, @api, @secondary_theme) will only be included and then balanced.
+
+```xml
+  <behat:balancer
+    containers="5"
+    root="/path/to/your/behat/features/directory"
+    destination="/path/to/destination/directory"
+    import="/path/to/base/behat/configuration/behat.yml"
+  >
+    <filterProfile name="default" tags="wip,profile,login,theme"/>
+    <filterProfile name="secondary_profile" tags="secondary_profile,api,secondary_theme"/>
+  </behat:balancer>
+```
+
+The balanced files will generate files in the following format `behat.{profile}.{part}.yml` and will produce the output:
+```xml
+imports:
+  - {behat_configuration_file}
+{profile}:
+  suites:
+    default:
+      paths:
+        - {feature}
+        - {feature}
+```
+
+If there are no filters, for backward compatibility the file name is `behat.{part}.yml`.

@@ -20,13 +20,26 @@ class BalancerTest extends TestCase {
    *
    * @dataProvider featureFilesProvider
    */
-  public function testContainersGeneration($containers, $files, $expected) {
+  public function testContainersGeneration($containers, $files, $expected, $filterprofiles = ['' => []]) {
     $balancer = \Mockery::mock('\Phing\Behat\Balancer');
-    $balancer->makePartial()->shouldReceive('scanDirectory')->andReturn($files);
+    $balancer->makePartial();
 
     /** @var \Phing\Behat\Balancer $balancer */
+    $scanFiles = $balancer->scanDirectory(__DIR__ . '/files', '/.feature/');
+    assert(sort($scanFiles), equals(sort($files)));
+
     $balancer->setContainers($containers);
-    $actual = $balancer->getContainers('foo');
+    $actual = [];
+    foreach ($balancer->getFilteredFiles($filterprofiles, $files) as $profile => $filteredFiles) {
+      $actual[$profile] = [];
+      foreach ($balancer->getContainers($filteredFiles) as $key => $container) {
+        $actual[$profile][$key] = $container;
+      }
+    }
+    if ($profile === '') {
+      $actual = $actual[$profile];
+    }
+
     assert($actual, equals($expected));
   }
 
@@ -35,23 +48,31 @@ class BalancerTest extends TestCase {
    *
    * @dataProvider featureFilesProvider
    */
-  public function testYamlGeneration($containers, $files, $expected) {
+  public function testYamlGeneration($containers, $files, $expected, $filterprofiles = ['' => []]) {
     $balancer = \Mockery::mock('\Phing\Behat\Balancer');
-    $balancer->makePartial()->shouldReceive('scanDirectory')->andReturn($files);
+    $balancer->makePartial();
 
     /** @var \Phing\Behat\Balancer $balancer */
+    $scanFiles = $balancer->scanDirectory(__DIR__ . '/files', '/.feature/');
+
     $balancer->setContainers($containers);
     $balancer->setImport('behat.import.yml');
 
-    foreach ($balancer->getContainers('foo') as $container) {
+    foreach ($balancer->getFilteredFiles($filterprofiles, $scanFiles) as $profile => $filteredFiles) {
+      foreach ($balancer->getContainers($filteredFiles) as $container) {
+        $content = $balancer->generateBehatYaml($container, $profile);
+        if ($profile === '') {
+          $profile = 'default';
+        }
 
-      $content = $balancer->generateBehatYaml($container);
-      $parsed = Yaml::parse($content);
+        $parsed = Yaml::parse($content);
 
-      assert($parsed, hasKey('default')->and(hasKey('imports')));
-      assert($parsed['imports'], equals(['behat.import.yml']));
-      assert($parsed['default']['suites']['default']['paths'], equals($container));
+        assert($parsed, hasKey($profile)->and(hasKey('imports')));
+        assert($parsed['imports'], equals(['behat.import.yml']));
+        assert($parsed[$profile]['suites']['default']['paths'], equals($container));
+      }
     }
+
   }
 
   /**
@@ -66,27 +87,27 @@ class BalancerTest extends TestCase {
       [
         'containers' => 3,
         'files' => [
-          'feature-1.feature',
-          'feature-2.feature',
-          'feature-3.feature',
-          'feature-4.feature',
-          'feature-5.feature',
-          'feature-6.feature',
-          'feature-7.feature',
+          __DIR__ . '/files/feature-1.feature',
+          __DIR__ . '/files/feature-2.feature',
+          __DIR__ . '/files/feature-3.feature',
+          __DIR__ . '/files/feature-4.feature',
+          __DIR__ . '/files/feature-5.feature',
+          __DIR__ . '/files/feature-6.feature',
+          __DIR__ . '/files/feature-7.feature',
         ],
         'expected' => [
           [
-            'feature-1.feature',
-            'feature-2.feature',
-            'feature-3.feature',
+            __DIR__ . '/files/feature-1.feature',
+            __DIR__ . '/files/feature-2.feature',
+            __DIR__ . '/files/feature-3.feature',
           ],
           [
-            'feature-4.feature',
-            'feature-5.feature',
-            'feature-6.feature',
+            __DIR__ . '/files/feature-4.feature',
+            __DIR__ . '/files/feature-5.feature',
+            __DIR__ . '/files/feature-6.feature',
           ],
           [
-            'feature-7.feature',
+            __DIR__ . '/files/feature-7.feature',
           ],
         ],
       ],
@@ -94,16 +115,138 @@ class BalancerTest extends TestCase {
       [
         'containers' => 1,
         'files' => [
-          'feature-1.feature',
-          'feature-2.feature',
-          'feature-3.feature',
+          __DIR__ . '/files/feature-1.feature',
+          __DIR__ . '/files/feature-2.feature',
+          __DIR__ . '/files/feature-3.feature',
+          __DIR__ . '/files/feature-4.feature',
+          __DIR__ . '/files/feature-5.feature',
+          __DIR__ . '/files/feature-6.feature',
+          __DIR__ . '/files/feature-7.feature',
         ],
         'expected' => [
           [
-            'feature-1.feature',
-            'feature-2.feature',
-            'feature-3.feature',
+            __DIR__ . '/files/feature-1.feature',
+            __DIR__ . '/files/feature-2.feature',
+            __DIR__ . '/files/feature-3.feature',
+            __DIR__ . '/files/feature-4.feature',
+            __DIR__ . '/files/feature-5.feature',
+            __DIR__ . '/files/feature-6.feature',
+            __DIR__ . '/files/feature-7.feature',
           ],
+        ],
+      ],
+      // Case 3.
+      [
+        'containers' => 1,
+        'files' => [
+          __DIR__ . '/files/feature-1.feature',
+          __DIR__ . '/files/feature-2.feature',
+          __DIR__ . '/files/feature-3.feature',
+          __DIR__ . '/files/feature-4.feature',
+          __DIR__ . '/files/feature-5.feature',
+          __DIR__ . '/files/feature-6.feature',
+          __DIR__ . '/files/feature-7.feature',
+        ],
+        'expected' => [
+          'default' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-2.feature',
+              __DIR__ . '/files/feature-3.feature',
+              __DIR__ . '/files/feature-4.feature',
+              __DIR__ . '/files/feature-6.feature',
+              __DIR__ . '/files/feature-7.feature',
+            ],
+          ],
+          'one' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-4.feature',
+              __DIR__ . '/files/feature-6.feature',
+            ],
+          ],
+          'onetwo' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-2.feature',
+              __DIR__ . '/files/feature-4.feature',
+              __DIR__ . '/files/feature-6.feature',
+            ],
+          ],
+          'three' => [
+            [
+              __DIR__ . '/files/feature-3.feature',
+              __DIR__ . '/files/feature-6.feature',
+              __DIR__ . '/files/feature-7.feature',
+            ],
+          ],
+        ],
+        'filterprofiles' => [
+          'default' => ['one','two','three'],
+          'one' => ['one'],
+          'onetwo' => ['one','two'],
+          'three' => ['three'],
+        ],
+      ],
+      // Case 4.
+      [
+        'containers' => 2,
+        'files' => [
+          __DIR__ . '/files/feature-1.feature',
+          __DIR__ . '/files/feature-2.feature',
+          __DIR__ . '/files/feature-3.feature',
+          __DIR__ . '/files/feature-4.feature',
+          __DIR__ . '/files/feature-5.feature',
+          __DIR__ . '/files/feature-6.feature',
+          __DIR__ . '/files/feature-7.feature',
+        ],
+        'expected' => [
+          'default' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-2.feature',
+              __DIR__ . '/files/feature-3.feature',
+            ],
+            [
+              __DIR__ . '/files/feature-4.feature',
+              __DIR__ . '/files/feature-6.feature',
+              __DIR__ . '/files/feature-7.feature',
+            ],
+          ],
+          'one' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-4.feature',
+            ],
+            [
+              __DIR__ . '/files/feature-6.feature',
+            ],
+          ],
+          'onetwo' => [
+            [
+              __DIR__ . '/files/feature-1.feature',
+              __DIR__ . '/files/feature-2.feature',
+            ],
+            [
+              __DIR__ . '/files/feature-4.feature',
+              __DIR__ . '/files/feature-6.feature',
+            ],
+          ],
+          'three' => [
+            [
+              __DIR__ . '/files/feature-3.feature',
+              __DIR__ . '/files/feature-6.feature',
+            ],
+            [
+              __DIR__ . '/files/feature-7.feature',
+            ],
+          ],
+        ],
+        'filterprofiles' => [
+          'default' => ['one','two','three'],
+          'one' => ['one'],
+          'onetwo' => ['one','two'],
+          'three' => ['three'],
         ],
       ],
     ];
