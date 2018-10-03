@@ -146,7 +146,7 @@ class Balancer extends \Task {
    * @return array
    *    An array of feature files for each profile.
    */
-  public function getFilteredFiles($filterProfiles, $files) {
+  public function getFilteredFiles(array $filterProfiles, array $files) {
     $filteredFiles = [];
 
     foreach ($filterProfiles as $profile => $filters) {
@@ -159,8 +159,8 @@ class Balancer extends \Task {
       }
 
       foreach ($files as $file) {
-        foreach($filters as $filter) {
-          if (strpos(file_get_contents($file), '@' . $filter) !== false) {
+        foreach ($filters as $filter) {
+          if (strpos(file_get_contents($file), '@' . $filter) !== FALSE) {
             $filteredFiles[$profile][$file] = $file;
           }
         }
@@ -174,13 +174,13 @@ class Balancer extends \Task {
   /**
    * Scan and divide feature files into containers.
    *
-   * @param string $root
-   *    Root directory to scan.
+   * @param array $files
+   *    List of all feature files with their absolute path.
    *
    * @return array
    *    List of feature files divided into containers.
    */
-  public function getContainers($files) {
+  public function getContainers(array $files) {
     $size = ceil(count($files) / $this->containers);
 
     return array_chunk($files, $size);
@@ -229,7 +229,7 @@ class Balancer extends \Task {
    * @return string
    *    Return behat.yaml file.
    */
-  public function generateBehatYaml($container, $profile) {
+  public function generateBehatYaml(array $container, $profile) {
     if ($profile === '') {
       $profile = 'default';
     }
@@ -255,7 +255,8 @@ YAML;
    * @param string $content
    *    Behat configuration file content.
    * @param string $profile
-   *    If filtered, the profile of the current filter, otherwise an empty string.
+   *    If filtered, the profile of the current filter,
+   *    otherwise an empty string.
    */
   protected function createFiles($number, $content, $profile) {
     $filename = "/behat.{$number}.yml";

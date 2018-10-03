@@ -182,9 +182,9 @@ class BalancerTest extends TestCase {
           ],
         ],
         'filterprofiles' => [
-          'default' => ['one','two','three'],
+          'default' => ['one', 'two', 'three'],
           'one' => ['one'],
-          'onetwo' => ['one','two'],
+          'onetwo' => ['one', 'two'],
           'three' => ['three'],
         ],
       ],
@@ -243,9 +243,9 @@ class BalancerTest extends TestCase {
           ],
         ],
         'filterprofiles' => [
-          'default' => ['one','two','three'],
+          'default' => ['one', 'two', 'three'],
           'one' => ['one'],
-          'onetwo' => ['one','two'],
+          'onetwo' => ['one', 'two'],
           'three' => ['three'],
         ],
       ],

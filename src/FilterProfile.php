@@ -83,7 +83,7 @@ class FilterProfile extends \DataType {
    *   The filter's tags.
    */
   public function getText() {
-    if (!$this->tags || strpos($this->tags, ',') === false) {
+    if (!$this->tags || strpos($this->tags, ',') === FALSE) {
       return [];
     }
 
