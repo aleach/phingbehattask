@@ -102,10 +102,12 @@ You can then configure your continuous integration to run one behat file per env
 
 The behat balancer also allows for filtering on tags when using multiple profiles.
 
-The following example will first filter the features into profile specific features, by using the tags as a filter:
-  - default: Features tagged with (@wip, @profile, @login or @theme) will only be included and then balanced.
-  - secondary_profile: Features taggegged with (@secondary_profile, @api, @secondary_theme) will only be included and then balanced.
+Filtering matches behat filtering [http://behat.org/en/latest/user_guide/configuration/suites.html#suite-filters]
 
+The following example will first filter the features into profile specific features, by using the tags as a filter:
+  - default: NOT @wip AND NOT @profile AND NOT @login AND must contain @theme will only be included and then balanced.
+  - secondary_profile: NOT @secondary_profile AND NOT @api AND must contain @secondary_theme or the the text 'As a(n) administrator' will only be included and then balanced.
+The filters are based on behat's filters and as such will also match any features that contain scenarios that are tagged.
 ```xml
   <behat:balancer
     containers="5"
@@ -113,8 +115,13 @@ The following example will first filter the features into profile specific featu
     destination="/path/to/destination/directory"
     import="/path/to/base/behat/configuration/behat.yml"
   >
-    <filterProfile name="default" tags="wip,profile,login,theme"/>
-    <filterProfile name="secondary_profile" tags="secondary_profile,api,secondary_theme"/>
+    <filters profile="default">
+        <tags><![CDATA[ ~@wip&&~@profile&&~@login&&@theme ]]></tags>
+    </filters>
+    <filters profile="secondary_profile">
+        <tags><![CDATA[ ~@secondary_profile&&~@api&&@secondary_theme ]]></tags>
+        <role>administrator</role>
+    </filters>
   </behat:balancer>
 ```
 

@@ -40,20 +40,20 @@ class Balancer extends \Task {
   /**
    * An array of filter profile.
    *
-   * @var FilterProfile[]
+   * @var Filters[]
    */
-  protected $filterProfiles = [];
+  protected $filters = [];
 
   /**
    * Create the filter profile.
    *
-   * @return FilterProfile
+   * @return Filters
    *   The created filter profile.
    */
-  public function createFilterProfile() {
-    $num = array_push($this->filterProfiles, new FilterProfile());
+  public function createFilters() {
+    $num = array_push($this->filters, new Filters());
 
-    return $this->filterProfiles[$num - 1];
+    return $this->filters[$num - 1];
   }
 
   /**
@@ -102,14 +102,14 @@ class Balancer extends \Task {
    * @return array
    *    An array of filterProfiles.
    */
-  public function getFilterProfiles() {
-    $filterProfiles = [];
+  public function getFilters() {
+    $filters = [];
 
-    foreach ($this->filterProfiles as $filterProfile) {
-      $filterProfiles[$filterProfile->getName()] = $filterProfile->getText();
+    foreach ($this->filters as $filter) {
+      $filters[$filter->getProfile()] = $filter->getFilters();
     }
 
-    return $filterProfiles ? $filterProfiles : ['' => []];
+    return $filters ? $filters : ['' => []];
   }
 
   /**
@@ -120,10 +120,10 @@ class Balancer extends \Task {
       throw new \InvalidArgumentException("{$this->destination} is not a valid directory.");
     }
 
-    $filterProfiles = $this->getFilterProfiles();
+    $filters = $this->getFilters();
     $files = $this->scanDirectory($this->root, '/.feature/');
 
-    $filteredFiles = $this->getFilteredFiles($filterProfiles, $files);
+    $filteredFiles = $this->getFilteredFiles($filters, $files);
     foreach ($filteredFiles as $profile => $filteredFiles) {
       foreach ($this->getContainers($filteredFiles) as $key => $container) {
         $content = $this->generateBehatYaml($container, $profile);
@@ -138,7 +138,7 @@ class Balancer extends \Task {
    * This function checks each feature file for the tags specified
    * in the filterProfile options.
    *
-   * @param array $filterProfiles
+   * @param array $filters
    *    The array of filters for each profile.
    * @param array $files
    *    List of all feature files with their absolute path.
@@ -146,23 +146,22 @@ class Balancer extends \Task {
    * @return array
    *    An array of feature files for each profile.
    */
-  public function getFilteredFiles(array $filterProfiles, array $files) {
+  public function getFilteredFiles(array $filters, $files) {
     $filteredFiles = [];
 
-    foreach ($filterProfiles as $profile => $filters) {
+    foreach ($filters as $profile => $filter) {
+      $pattern = implode('|', $filter);
       $filteredFiles[$profile] = [];
 
       // Empty tag, all files.
-      if ($filters === []) {
+      if ($pattern === '') {
         $filteredFiles[$profile] = $files;
         continue;
       }
 
       foreach ($files as $file) {
-        foreach ($filters as $filter) {
-          if (strpos(file_get_contents($file), '@' . $filter) !== FALSE) {
-            $filteredFiles[$profile][$file] = $file;
-          }
+        if (preg_match_all("/{$pattern}/im", file_get_contents($file))) {
+          $filteredFiles[$profile][$file] = $file;
         }
       }
       $filteredFiles[$profile] = array_values($filteredFiles[$profile]);
@@ -172,10 +171,10 @@ class Balancer extends \Task {
   }
 
   /**
-   * Scan and divide feature files into containers.
+   * Split an array of files into multiple arrays.
    *
    * @param array $files
-   *    List of all feature files with their absolute path.
+   *   The files to split into containers.
    *
    * @return array
    *    List of feature files divided into containers.
@@ -183,7 +182,7 @@ class Balancer extends \Task {
   public function getContainers(array $files) {
     $size = ceil(count($files) / $this->containers);
 
-    return array_chunk($files, $size);
+    return $size > 0 ? array_chunk($files, $size) : [];
   }
 
   /**
@@ -198,22 +197,24 @@ class Balancer extends \Task {
    *    List of files with their absolute path.
    */
   public function scanDirectory($dir, $mask) {
+    if (!is_dir($dir) || !$handle = opendir($dir)) {
+      return [];
+    }
+
     $depth = 0;
     $files = [];
-    if (is_dir($dir) && $handle = opendir($dir)) {
-      while (FALSE !== ($filename = readdir($handle))) {
-        if (!preg_match('/(\.\.?|CVS)$/', $filename) && $filename[0] != '.') {
-          $uri = "$dir/$filename";
-          if (is_dir($uri)) {
-            $files = array_merge($this->scanDirectory($uri, $mask), $files);
-          }
-          elseif ($depth >= 0 && preg_match($mask, $filename)) {
-            $files[] = $uri;
-          }
+    while (FALSE !== ($filename = readdir($handle))) {
+      if (!preg_match('/(\.\.?|CVS)$/', $filename) && $filename[0] != '.') {
+        $uri = "$dir/$filename";
+        if (is_dir($uri)) {
+          $files = array_merge($this->scanDirectory($uri, $mask), $files);
+        }
+        elseif ($depth >= 0 && preg_match($mask, $filename)) {
+          $files[] = $uri;
         }
       }
-      closedir($handle);
     }
+    closedir($handle);
 
     return $files;
   }
@@ -255,8 +256,7 @@ YAML;
    * @param string $content
    *    Behat configuration file content.
    * @param string $profile
-   *    If filtered, the profile of the current filter,
-   *    otherwise an empty string.
+   *    If filtered, the profile of the current filter, otherwise an empty string.
    */
   protected function createFiles($number, $content, $profile) {
     $filename = "/behat.{$number}.yml";
